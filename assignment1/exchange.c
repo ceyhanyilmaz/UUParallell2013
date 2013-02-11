@@ -1,17 +1,18 @@
-/**********************************************************************
- * Derived datatypes in MPI/C
- *
- **********************************************************************/
 
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#define N_MAX 10000000
 
 int main(int argc, char *argv[]) {
-  int rank, size,nx,ny,row,col,count,blocklen,stride;
+  int rank, size,nx,ny,row,col,count,blocklen,stride,seed;
   double *A;
   MPI_Status status;
   MPI_Datatype newtype;
+
+  seed = time(NULL);
+  srand(seed);
 
   MPI_Init(&argc, &argv);               /* Initialize MPI               */
   MPI_Comm_size(MPI_COMM_WORLD, &size); /* Get the number of processors */
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]) {
     printf("Matrix A on proc 0\n");
     for (row=0; row<nx;row++){
       for (col=0; col<ny;col++){
-        A[row*ny+col]=(double)col+100*row+1000;
+        A[row*ny+col]= (rand() % 9 +1);
         printf("%d ", (int)A[row*ny+col]);
       }
       printf("\n");
