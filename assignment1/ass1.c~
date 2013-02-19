@@ -73,6 +73,7 @@ void fill_matrix(double* matrix,int n){
    printf("\n");
 }
 
+
 int main(int argc, char *argv[]) {
 	GRID_INFO_T grid;
     double *local_A, *local_B, *local_C;
