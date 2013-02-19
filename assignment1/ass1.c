@@ -73,6 +73,44 @@ void fill_matrix(double* matrix,int n){
    printf("\n");
 }
 
+
+void multiplyLocal(int n, double *m1, double *m2, double *m3) {
+    int i,j,k;
+     for (i = 0; i < n; i++) {
+        for(j = 0; j < n; j++) {
+            for (k = 0; k < n; k++) {
+                m3[(j*n)+i] += m1[(k*n)+i]*m2[(j*n)+k];
+            }
+
+            printf("C_(%d,%d) = %f\n", i,j,m3[(j*n)+i]);
+        }
+    }
+}
+ 
+int Fox(int n, MPI_Datatype *submatrix, GRID_INFO_T *grid, double *A, double *B, double *C) {
+    double *tempMatrix; 
+    MPI_Status status;
+    
+    tempMatrix = (double *)calloc(n*n,sizeof(double));	
+    int i, root;
+    for (i = 0; i<grid->length; i++) {
+        root = i; //(grid->rowrank+i)%(grid->length)
+        printf("Root is %d\n", root);
+        
+        if (root == grid->colrank) {
+            MPI_Bcast(A, n/grid->length, MPI_DOUBLE, root, grid->proc_row);
+            multiplyLocal(n/grid->length, A, B, C);
+        } else {
+            MPI_Bcast(tempMatrix, n/grid->length, MPI_DOUBLE, root, grid->proc_row);
+            multiplyLocal(n/grid->length, tempMatrix, B, C);
+        }
+
+        MPI_Sendrecv_replace(B, 1, MPI_DOUBLE, (grid->rowrank+grid->length+1)%grid->length, 0, 
+            (grid->rowrank+grid->length-1)%grid->length, 0, grid->proc_row, &status);
+    }
+}
+
+
 int main(int argc, char *argv[]) {
 	GRID_INFO_T grid;
     double *local_A, *local_B, *local_C;
@@ -84,7 +122,6 @@ int main(int argc, char *argv[]) {
     seed = time(NULL);
     srand(seed);
 	n = atoi(argv[1]); 
-
   
 	MPI_Init(&argc, &argv); 		 /* Initialize MPI */
 	setup_grid(&grid);
@@ -104,6 +141,7 @@ int main(int argc, char *argv[]) {
     } else {
         A = (double *)calloc(count,sizeof(double));
         B = (double *)calloc(count,sizeof(double));
+        C = (double *)calloc(n*n,sizeof(double));
     }
     //PrintGridInfo(&grid);
 
@@ -112,6 +150,7 @@ int main(int argc, char *argv[]) {
 
     int elems = n/grid.length;
 
+	/* Distribute matrices A and B so that each process gets A_local and B_local */
 	if (grid.gridrank == 0) {
         int i;
 
@@ -120,15 +159,16 @@ int main(int argc, char *argv[]) {
             int row = (i % grid.length)*elems;
 
             MPI_Send(&A[row*n+col], 1, submatrix, i, 111, grid.proc_grid);
+            MPI_Send(&B[row*n+col], 1, submatrix, i, 111, grid.proc_grid);
         }
     } else {  
         MPI_Recv(&A[0], 1, submatrix, 0, 111, grid.proc_grid, &status);
+        MPI_Recv(&B[0], 1, submatrix, 0, 111, grid.proc_grid, &status);
 
         int i, j;
-
         int row = grid.gridrank % grid.length;
 
-       // printf("Matrix A on proc %d\n", grid.gridrank);
+
         for (i=0; i<elems; i++) {
             for (j=0; j<elems; j++) {
                    if (grid.gridrank == 1) {
@@ -138,25 +178,20 @@ int main(int argc, char *argv[]) {
             printf("\n"); 
     }
   }
-	/* TODO: Distribute matrices A and B so that each process gets A_local and B_local */
-	
-
 
 	/* Do the FOX */
-	
+    Fox(n, &submatrix, &grid, A, B, C);
+
 	/* Collect submatrices C_local (Allgather?) */
-	
-	
+	MPI_Barrier(MPI_COMM_WORLD);
+    
+    int i;
+    for (i = 0
 
-
-
-  
   /* Send last column, notice the message length = 1 ! */
   if (grid.gridrank == 0) {
-
     free(A);
     free(B);
-
     free(C);
   }
 
