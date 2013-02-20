@@ -52,6 +52,7 @@ void setup_grid(GRID_INFO_T *grid) {
     MPI_Comm_size(MPI_COMM_WORLD, &(grid->size));    /* Get the number of processors */
     
     grid->length = (int)sqrt((double)grid->size);
+    //printf("Length is %d and size is %d", grid->length, grid->size);
     assert(grid->length*grid->length == grid->size); /* Check to see if size is a good square number */
     dims[0] = dims[1] = grid->length;
 
