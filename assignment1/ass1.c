@@ -1,3 +1,8 @@
+/*
+ * Assignment: Fox implementation 
+ * Author: Anders Hassis, Jill Karlsson & Andreas Moregård
+ */
+
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,14 +12,14 @@
 #define N_MAX 10000000
 
 typedef struct GRID_INFO_T {
-    int       size;             /* # of processes   		*/
-    MPI_Comm  proc_grid;        /* Grid communicator 		*/
-    MPI_Comm  proc_row;         /* Row communicator  		*/
-    MPI_Comm  proc_col;  		/* Column communicator  */
-    int       length;    		/* Length of grid       */
-    int       rowrank;    		/* My row number        */
-    int       colrank;    		/* My column number     */
-    int       gridrank;   		/* Grid rank     				*/
+    int       size;             /* # of processes           */
+    MPI_Comm  proc_grid;        /* Grid communicator        */
+    MPI_Comm  proc_row;         /* Row communicator         */
+    MPI_Comm  proc_col;         /* Column communicator  */
+    int       length;           /* Length of grid       */
+    int       rowrank;          /* My row number        */
+    int       colrank;          /* My column number     */
+    int       gridrank;         /* Grid rank                    */
 } GRID_INFO_T;
 
 void printMatrix(double *m, int dims) {
@@ -30,35 +35,33 @@ void printMatrix(double *m, int dims) {
 
 void PrintGridInfo (GRID_INFO_T *grid) {
     printf ("--------------------\n");
-	printf ("Number of Processes is %d\n", grid->size);
-	printf ("Grid Comm Identifier is %d\n", grid->proc_grid);
-	printf ("Row Comm Identifier is %d\n", grid->proc_row);
-	printf ("Column Comm Identifier is %d\n", grid->proc_col);
-	printf ("Grid Order is %d\n", grid->length);
-	printf ("Current Process Coordinates are (%d, %d)\n",
-            grid->rowrank, grid->colrank);
-	printf ("Process rank in Grid is %d\n", grid->gridrank); 
+    printf ("Number of Processes is %d\n", grid->size);
+    printf ("Grid Comm Identifier is %d\n", grid->proc_grid);
+    printf ("Row Comm Identifier is %d\n", grid->proc_row);
+    printf ("Column Comm Identifier is %d\n", grid->proc_col);
+    printf ("Grid Order is %d\n", grid->length);
+    printf ("Current Process Coordinates are (%d, %d)\n", grid->rowrank, grid->colrank);
+    printf ("Process rank in Grid is %d\n", grid->gridrank); 
     printf ("--------------------\n");
 }
 
-void setup_grid(GRID_INFO_T *grid){
-	int rank, coords[2], pos[2], reorder = 1, ndim = 2, dims[2], periodic[2] = {0,0};
-		
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); 			 /* Get my number                */
-	MPI_Comm_size(MPI_COMM_WORLD, &(grid->size)); 	 /* Get the number of processors */
-	
-
-	grid->length = (int)sqrt((double)grid->size);
+void setup_grid(GRID_INFO_T *grid) {
+    int rank, coords[2], pos[2], reorder = 1, ndim = 2, dims[2], periodic[2] = {0,0};
+        
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);            /* Get my number                */
+    MPI_Comm_size(MPI_COMM_WORLD, &(grid->size));    /* Get the number of processors */
+    
+    grid->length = (int)sqrt((double)grid->size);
     assert(grid->length*grid->length == grid->size); /* Check to see if size is a good square number */
     dims[0] = dims[1] = grid->length;
 
     MPI_Dims_create(grid->size, ndim, dims);
     MPI_Cart_create(MPI_COMM_WORLD, ndim, dims, periodic, reorder, &(grid->proc_grid));  /* Create grid */
-    MPI_Comm_rank(grid->proc_grid, &(grid->gridrank));    					             /* Distribute grid ranks */
+    MPI_Comm_rank(grid->proc_grid, &(grid->gridrank));                                   /* Distribute grid ranks */
 
     MPI_Cart_coords(grid->proc_grid,grid->gridrank,ndim,coords);                         /* Gives coordinates for gridrank */
 
-	 /* Create a communicator for each row */
+     /* Create a communicator for each row */
     MPI_Comm_split(grid->proc_grid,coords[1],coords[0],&(grid->proc_row));
     MPI_Comm_rank(grid->proc_row,&(grid->rowrank));
 
@@ -69,10 +72,10 @@ void setup_grid(GRID_INFO_T *grid){
 }
 
 void fill_matrix(double* matrix,int n){
-	//printf("Matrix:\n");
+    //printf("Matrix:\n");
     int row,col;
-    for (row=0; row<n;row++){
-      for (col=0; col<n;col++){
+    for (row=0; row<n;row++) {
+      for (col=0; col<n;col++) {
         matrix[row*n+col]= (rand() % 9 +1);
       //  printf("%d ", (int)matrix[row*n+col]);
       }
@@ -83,7 +86,6 @@ void fill_matrix(double* matrix,int n){
 
 // Multiply two matrices (m1 and m2) and put result in m3
 void multiplyLocal(int n, double *m1, double *m2, double *m3) {
-
     int i,j,k;
      for (i = 0; i < n; i++) {
         for(j = 0; j < n; j++) {
@@ -98,7 +100,7 @@ int Fox(int elems, GRID_INFO_T *grid, double *A, double *B, double *C) {
     double *tempMatrix; 
     MPI_Status status;
 
-    tempMatrix = (double *)calloc(elems*elems,sizeof(double));	
+    tempMatrix = (double *)calloc(elems*elems,sizeof(double));  
     int stage, root;
 
     for (stage = 0; stage<grid->length; stage++) {
@@ -154,49 +156,48 @@ void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n) 
 
 
 int main(int argc, char *argv[]) {
-	GRID_INFO_T grid;
-    double start, end;
+    double startTime = 0.0, endTime = 0.0, finish = 0.0;
     double *global_A, *global_B, *global_C;
     double *A, *B, *C;
     int n, seed, count, blocklen, stride;
+
+    GRID_INFO_T grid;
     MPI_Status status;
     MPI_Datatype submatrix;
   
     seed = time(NULL);
     srand(seed);
-	n = atoi(argv[1]); 
+    n = atoi(argv[1]); 
   
-	MPI_Init(&argc, &argv); 		    /* Initialize MPI */
+    MPI_Init(&argc, &argv);             /* Initialize MPI */
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (grid.gridrank == 0)
-        start = MPI_Wtime();
+    startTime = MPI_Wtime();
 
-	setup_grid(&grid);
+    setup_grid(&grid);
 
-	stride = n;					        /* Number of elements in one row/column -> n */
-	count = blocklen = n/grid.length;   /* Number of elements in matrix divided by length of grid(sqrt of processes) */
+    stride = n;                         /* Number of elements in one row/column -> n */
+    count = blocklen = n/grid.length;   /* Number of elements in matrix divided by length of grid(sqrt of processes) */
     A = (double *)calloc(count*count,sizeof(double));
     B = (double *)calloc(count*count,sizeof(double));
     C = (double *)calloc(count*count,sizeof(double));
     
     /* Fill and print matrix A and B */
-	if (grid.gridrank == 0) {
-        global_A = (double *)calloc(n*n,sizeof(double)); 	/* Matrix A */
-	    global_B = (double *)calloc(n*n,sizeof(double)); 	/* Matrix B */	
-        global_C = (double *)calloc(n*n,sizeof(double));	/* Matrix C */
+    if (grid.gridrank == 0) {
+        global_A = (double *)calloc(n*n,sizeof(double));    /* Matrix A */
+        global_B = (double *)calloc(n*n,sizeof(double));    /* Matrix B */  
+        global_C = (double *)calloc(n*n,sizeof(double));    /* Matrix C */
 
-		fill_matrix(global_A, n);
-		fill_matrix(global_B, n);
+        fill_matrix(global_A, n);
+        fill_matrix(global_B, n);
     }
-    //PrintGridInfo(&grid);
 
     MPI_Type_vector(count,blocklen,stride,MPI_DOUBLE,&submatrix);
     MPI_Type_commit(&submatrix);
 
     int elems = n/grid.length;
-	/* Distribute matrices A and B so that each process gets A_local and B_local */
-	if (grid.gridrank == 0) {
+    /* Distribute matrices A and B so that each process gets A_local and B_local */
+    if (grid.gridrank == 0) {
         int i;
         for(i=1; i<grid.size; i++) {
             int col = floor(i/grid.length)*elems;
@@ -217,11 +218,11 @@ int main(int argc, char *argv[]) {
         MPI_Recv(B, elems*elems, MPI_DOUBLE, 0, 112, grid.proc_grid, &status);
     }
 
-	/* Do the FOX */
+    /* Do the FOX */
     Fox(elems, &grid, A, B, C);
 
     /* Syncronize the calculations */
-	MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     collectMatrix(global_C, C, &grid, n);
 
@@ -244,15 +245,15 @@ int main(int argc, char *argv[]) {
     free(B);
     free(C);
 
-  MPI_Type_free(&submatrix);
+    MPI_Type_free(&submatrix);
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Finalize(); 
+  
+    if (grid.gridrank == 0) {
+        endTime = MPI_Wtime();
+        finish = endTime-startTime;
+        printf("Execution time: %.10f\n", finish);
+    }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  end = MPI_Wtime();
-
-  MPI_Finalize(); 
-
-  if (grid.gridrank == 0) {
-    printf("Runtime: %d\n", end-start);
-  }
   return 0;
 }
