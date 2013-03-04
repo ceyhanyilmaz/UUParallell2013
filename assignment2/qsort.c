@@ -5,12 +5,10 @@
 #include <time.h>
 #include <math.h>
 
-#define NUM_THREADS 50
-#define INTERVALS 100000000
 #define DEBUG 0
 
 void qsort_serial( int l, int r);
-void *threadQuickSort(void *arg);
+void *qsort_parallel(void *arg);
 int partition_serial( int l, int r);
 
 pthread_mutex_t mutexsort;
@@ -21,6 +19,8 @@ struct thread_data {
 };
 
 int thread_count = 0;
+int thread_maximum = 0;
+int elements_maximum = 0;
 int *elements;
 
 void *qsort_parallel(void *arg) {
@@ -36,7 +36,7 @@ void *qsort_parallel(void *arg) {
   end_index = args->end_index;
 
   if (start_index < end_index) {
-    if (end_index-start_index > (0.1*INTERVALS) && thread_count < NUM_THREADS-2) {
+    if (end_index-start_index > (0.1*elements_maximum) && thread_count < thread_maximum-2) {
       pivot = partition_serial(start_index, end_index);
 
       index_left.start_index = start_index;
@@ -103,12 +103,20 @@ int partition_serial( int l, int r) {
   return j;
 }
 
-void main()  {
+void main (int argc, char *argv[]) {
   int seed, rank, nthreads, t, i, j, rc;
   struct thread_data index_left;
   void *status;
   int pivot;
   int ttime;
+
+  if (argc != 3) {
+    printf("Example of usage: ./qsort <elements> <threads>\n");
+    return;
+  }
+
+  elements_maximum = atoi(argv[1]);
+  thread_maximum = atoi(argv[2]);
 
   ttime = timer();
   seed = time(NULL);
@@ -121,22 +129,22 @@ void main()  {
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_mutex_init(&mutexsort, NULL);
 
-  elements = (int *)malloc(INTERVALS*sizeof(int));  
+  elements = (int *)malloc(elements_maximum*sizeof(int));  
 
-  for(j = 0; j <= INTERVALS; j++) {
+  for(j = 0; j <= elements_maximum; j++) {
     elements[j] = (rand() % 999 +1);
   }
 
   if (DEBUG) {
     printf("\n\nUnsorted array is:  ");
-    for(i = 0; i < INTERVALS; ++i) {
+    for(i = 0; i < elements_maximum; ++i) {
       printf(" %d ", elements[i]);
     }
     printf("\n");
   }
   
   index_left.start_index = 0;
-  index_left.end_index =  INTERVALS-1;
+  index_left.end_index =  elements_maximum-1;
 
   rc = pthread_create(&thread, &attr, qsort_parallel, (void *) &index_left);
 
@@ -144,14 +152,14 @@ void main()  {
 
   if (DEBUG) {
     printf("\n\nSorted array is:  ");
-    for(i = 0; i < INTERVALS; ++i) {
+    for(i = 0; i < elements_maximum; ++i) {
       printf(" %d ", elements[i]);
     }
     printf("\n");
   }
 
   ttime = timer()-ttime;
-  printf("\nTime: %f, Threads: %d\n\n", ttime/1000000.0, thread_count);
+  printf("\nTime: %f, Threads used: %d\n\n", ttime/1000000.0, thread_count);
 
   pthread_mutex_destroy(&mutexsort);
   pthread_attr_destroy(&attr);
