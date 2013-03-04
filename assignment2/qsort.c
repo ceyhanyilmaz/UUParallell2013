@@ -18,7 +18,7 @@ struct thread_data {
   int end_index;
 };
 
-int thread_count = 0;
+int thread_count = 1;
 int thread_maximum = 0;
 int elements_maximum = 0;
 int *elements;
