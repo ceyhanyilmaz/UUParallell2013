@@ -36,8 +36,16 @@ void *qsort_parallel(void *arg) {
   end_index = args->end_index;
 
   if (start_index < end_index) {
+    pthread_mutex_lock(&mutexsort);
+    int threadcheck = thread_count <= thread_maximum-2;
     
-    if (thread_count < thread_maximum-2) {
+    if (threadcheck) {
+      thread_count += 2;
+    }
+
+    pthread_mutex_unlock(&mutexsort);
+
+    if (threadcheck) {
       pivot = partition_serial(start_index, end_index);
 
       index_left.start_index = start_index;
@@ -45,10 +53,6 @@ void *qsort_parallel(void *arg) {
 
       index_right.start_index = pivot+1;
       index_right.end_index = end_index;
-
-      pthread_mutex_lock(&mutexsort);
-      thread_count += 2;
-      pthread_mutex_unlock(&mutexsort);
 
       pthread_create(&thread1, NULL, qsort_parallel,(void *) &index_left);
       pthread_create(&thread2, NULL, qsort_parallel,(void *) &index_right);
