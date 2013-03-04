@@ -36,7 +36,8 @@ void *qsort_parallel(void *arg) {
   end_index = args->end_index;
 
   if (start_index < end_index) {
-    if (end_index-start_index > (0.1*elements_maximum) && thread_count < thread_maximum-2) {
+    
+    if (thread_count < thread_maximum-2) {
       pivot = partition_serial(start_index, end_index);
 
       index_left.start_index = start_index;
