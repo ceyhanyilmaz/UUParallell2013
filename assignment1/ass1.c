@@ -139,7 +139,7 @@ void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n) 
 
         for(i = 1; i<grid->size; i++){
             MPI_Recv(tempMatrix, elems*elems, MPI_DOUBLE, i, 0, grid->proc_grid, &status);
-            MPI_Recv(coords, 2, MPI_INT, i, 1, grid->proc_grid, &status); // Index
+            MPI_Cart_coords(grid->proc_grid, i, 2, coords);
 
             for (j = 0; j < elems; j++) {
                 for (k = 0; k < elems; k++) {
@@ -151,7 +151,6 @@ void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n) 
     } else {
         // Send to root
         MPI_Send(local_C, elems*elems, MPI_DOUBLE, 0, 0, grid->proc_grid);
-        MPI_Send(coords, 2, MPI_INT, 0, 1, grid->proc_grid);
     }
 }
 
@@ -173,8 +172,6 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);             /* Initialize MPI */
     MPI_Barrier(MPI_COMM_WORLD);
 
-    startTime = MPI_Wtime();
-
     setup_grid(&grid);
 
     stride = n;                         /* Number of elements in one row/column -> n */
@@ -195,6 +192,8 @@ int main(int argc, char *argv[]) {
 
     MPI_Type_vector(count,blocklen,stride,MPI_DOUBLE,&submatrix);
     MPI_Type_commit(&submatrix);
+
+    startTime = MPI_Wtime();
 
     int elems = n/grid.length;
     /* Distribute matrices A and B so that each process gets A_local and B_local */
@@ -227,6 +226,12 @@ int main(int argc, char *argv[]) {
 
     collectMatrix(global_C, C, &grid, n);
 
+    if (grid.gridrank == 0) {
+        endTime = MPI_Wtime();
+        finish = endTime-startTime;
+        printf("Execution time: %.10f\n", finish);
+    }
+
     /* Print our finalized C matrix 
     if (grid.gridrank == 0) {
         printf("Finished product:\n");
@@ -249,12 +254,6 @@ int main(int argc, char *argv[]) {
     MPI_Type_free(&submatrix);
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize(); 
-  
-    if (grid.gridrank == 0) {
-        endTime = MPI_Wtime();
-        finish = endTime-startTime;
-        printf("Execution time: %.10f\n", finish);
-    }
 
   return 0;
 }
