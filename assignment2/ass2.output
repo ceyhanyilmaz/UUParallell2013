@@ -1,0 +1,212 @@
+
+n = 1000
+t = 1
+Time: 0.000474, Threads used: 1
+Time: 0.000417, Threads used: 1
+Time: 0.000307, Threads used: 1
+Time: 0.000330, Threads used: 1
+t = 5
+Time: 0.004883, Threads used: 5
+Time: 0.001318, Threads used: 5
+Time: 0.001282, Threads used: 5
+Time: 0.001345, Threads used: 5
+t = 10
+Time: 0.006638, Threads used: 9
+Time: 0.002035, Threads used: 9
+Time: 0.005650, Threads used: 9
+Time: 0.002450, Threads used: 9
+t = 25
+Time: 0.015408, Threads used: 25
+Time: 0.017760, Threads used: 25
+Time: 0.019565, Threads used: 25
+Time: 0.023414, Threads used: 25
+t = 50
+Time: 0.041319, Threads used: 49
+Time: 0.044990, Threads used: 49
+Time: 0.036312, Threads used: 49
+Time: 0.037959, Threads used: 49
+t = 75
+Time: 0.048102, Threads used: 75
+Time: 0.055576, Threads used: 75
+Time: 0.056518, Threads used: 75
+Time: 0.053364, Threads used: 75
+t = 100
+Time: 0.071447, Threads used: 99
+Time: 0.070032, Threads used: 99
+Time: 0.072391, Threads used: 99
+Time: 0.063913, Threads used: 99
+t = 150
+Time: 0.094201, Threads used: 149
+Time: 0.089335, Threads used: 149
+Time: 0.087246, Threads used: 149
+Time: 0.090840, Threads used: 149
+n = 10000
+t = 1
+Time: 0.001273, Threads used: 1
+Time: 0.001238, Threads used: 1
+Time: 0.001151, Threads used: 1
+Time: 0.001141, Threads used: 1
+t = 5
+Time: 0.000763, Threads used: 5
+Time: 0.000797, Threads used: 5
+Time: 0.001559, Threads used: 5
+Time: 0.001436, Threads used: 5
+t = 10
+Time: 0.002389, Threads used: 9
+Time: 0.002309, Threads used: 9
+Time: 0.002957, Threads used: 9
+Time: 0.002025, Threads used: 9
+t = 25
+Time: 0.010387, Threads used: 25
+Time: 0.012898, Threads used: 25
+Time: 0.012214, Threads used: 25
+Time: 0.013176, Threads used: 25
+t = 50
+Time: 0.028741, Threads used: 49
+Time: 0.030886, Threads used: 49
+Time: 0.029538, Threads used: 49
+Time: 0.027402, Threads used: 49
+t = 75
+Time: 0.044745, Threads used: 75
+Time: 0.043710, Threads used: 75
+Time: 0.041188, Threads used: 75
+Time: 0.043207, Threads used: 75
+t = 100
+Time: 0.057356, Threads used: 99
+Time: 0.054756, Threads used: 99
+Time: 0.056265, Threads used: 99
+Time: 0.062989, Threads used: 99
+t = 150
+Time: 0.095047, Threads used: 149
+Time: 0.083655, Threads used: 149
+Time: 0.090950, Threads used: 149
+Time: 0.104765, Threads used: 149
+n = 100000
+t = 1
+Time: 0.019760, Threads used: 1
+Time: 0.019406, Threads used: 1
+Time: 0.022934, Threads used: 1
+Time: 0.019490, Threads used: 1
+t = 5
+Time: 0.012285, Threads used: 5
+Time: 0.012543, Threads used: 5
+Time: 0.013462, Threads used: 5
+Time: 0.013317, Threads used: 5
+t = 10
+Time: 0.011405, Threads used: 9
+Time: 0.012501, Threads used: 9
+Time: 0.014885, Threads used: 9
+Time: 0.013437, Threads used: 9
+t = 25
+Time: 0.020846, Threads used: 25
+Time: 0.018327, Threads used: 25
+Time: 0.018028, Threads used: 25
+Time: 0.019011, Threads used: 25
+t = 50
+Time: 0.029714, Threads used: 49
+Time: 0.030263, Threads used: 49
+Time: 0.037033, Threads used: 49
+Time: 0.029905, Threads used: 49
+t = 75
+Time: 0.048216, Threads used: 75
+Time: 0.050344, Threads used: 75
+Time: 0.046691, Threads used: 75
+Time: 0.044744, Threads used: 75
+t = 100
+Time: 0.061756, Threads used: 99
+Time: 0.056315, Threads used: 99
+Time: 0.057302, Threads used: 99
+Time: 0.060861, Threads used: 99
+t = 150
+Time: 0.093244, Threads used: 149
+Time: 0.089072, Threads used: 149
+Time: 0.087327, Threads used: 149
+Time: 0.086034, Threads used: 149
+n = 1000000
+t = 1
+Time: 1.560728, Threads used: 1
+Time: 1.540746, Threads used: 1
+Time: 1.539383, Threads used: 1
+Time: 1.543382, Threads used: 1
+t = 5
+Time: 0.731275, Threads used: 5
+Time: 0.747860, Threads used: 5
+Time: 0.810536, Threads used: 5
+Time: 0.805139, Threads used: 5
+t = 10
+Time: 0.683983, Threads used: 9
+Time: 0.677492, Threads used: 9
+Time: 0.679056, Threads used: 9
+Time: 0.677369, Threads used: 9
+t = 25
+Time: 0.418226, Threads used: 25
+Time: 0.471896, Threads used: 25
+Time: 0.426183, Threads used: 25
+Time: 0.447189, Threads used: 25
+t = 50
+Time: 0.415952, Threads used: 49
+Time: 0.400262, Threads used: 49
+Time: 0.391265, Threads used: 49
+Time: 0.454306, Threads used: 49
+t = 75
+Time: 0.431856, Threads used: 75
+Time: 0.443294, Threads used: 75
+Time: 0.436118, Threads used: 75
+Time: 0.437296, Threads used: 75
+t = 100
+Time: 0.436148, Threads used: 99
+Time: 0.443836, Threads used: 99
+Time: 0.424433, Threads used: 99
+Time: 0.381030, Threads used: 99
+t = 150
+Time: 0.384983, Threads used: 149
+Time: 0.442010, Threads used: 149
+Time: 0.403125, Threads used: 149
+Time: 0.440365, Threads used: 149
+n = 10000000
+t = 1
+Time: 131.760987, Threads used: 1
+Time: 137.560756, Threads used: 1
+Time: 132.788023, Threads used: 1
+Time: 129.705221, Threads used: 1
+t = 5
+Time: 72.782281, Threads used: 5
+Time: 69.072102, Threads used: 5
+Time: 68.888240, Threads used: 5
+Time: 69.333573, Threads used: 5
+t = 10
+Time: 67.146043, Threads used: 9
+Time: 65.048486, Threads used: 9
+Time: 72.265037, Threads used: 9
+Time: 63.580500, Threads used: 9
+t = 25
+Time: 45.001025, Threads used: 25
+Time: 45.310890, Threads used: 25
+Time: 43.346128, Threads used: 25
+Time: 44.439239, Threads used: 25
+t = 50
+Time: 46.495151, Threads used: 49
+Time: 46.250396, Threads used: 49
+Time: 67.469070, Threads used: 49
+Time: 46.393518, Threads used: 49
+t = 75
+Time: 35.495838, Threads used: 75
+Time: 43.224796, Threads used: 75
+Time: 43.786363, Threads used: 75
+Time: 43.727129, Threads used: 75
+t = 100
+Time: 42.631868, Threads used: 99
+Time: 45.133174, Threads used: 99
+Time: 46.024641, Threads used: 99
+Time: 36.720161, Threads used: 99
+t = 150
+Time: 34.305964, Threads used: 149
+Time: 36.279299, Threads used: 149
+Time: 36.763885, Threads used: 149
+Time: 34.461247, Threads used: 149
+n = 100000000
+t = 1
+Time: -1336.908310, Threads used: 1
+Time: -1935.233960, Threads used: 1
+Time: -1889.755638, Threads used: 1
+Time: -2106.314053, Threads used: 1

@@ -123,10 +123,6 @@ void main (int argc, char *argv[]) {
   elements_maximum = atoi(argv[1]);
   thread_maximum = atoi(argv[2]);
 
-  ttime = timer();
-  seed = time(NULL);
-  srand(seed);
-
   pthread_t thread;
   pthread_attr_t attr;
 
@@ -148,6 +144,10 @@ void main (int argc, char *argv[]) {
     printf("\n");
   }
   
+  ttime = timer();
+  seed = time(NULL);
+  srand(seed);
+
   index_left.start_index = 0;
   index_left.end_index =  elements_maximum-1;
 
@@ -164,7 +164,7 @@ void main (int argc, char *argv[]) {
   }
 
   ttime = timer()-ttime;
-  printf("\nTime: %f, Threads used: %d\n\n", ttime/1000000.0, thread_count);
+  printf("Time: %f, Threads used: %d\n", ttime/1000000.0, thread_count);
 
   pthread_mutex_destroy(&mutexsort);
   pthread_attr_destroy(&attr);
