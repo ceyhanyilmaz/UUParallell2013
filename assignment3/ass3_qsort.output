@@ -1,0 +1,108 @@
+n = 100000
+t = 1
+Completed 0.018934s
+Completed 0.018825s
+Completed 0.018303s
+Completed 0.018547s
+t = 2
+Completed 0.010212s
+Completed 0.010196s
+Completed 0.009575s
+Completed 0.009609s
+t = 4
+Completed 0.005913s
+Completed 0.005992s
+Completed 0.005738s
+Completed 0.005659s
+t = 8
+Completed 0.006628s
+Completed 0.005011s
+Completed 0.004692s
+Completed 0.005091s
+t = 16
+Completed 0.005657s
+Completed 0.007466s
+Completed 0.007776s
+Completed 0.007220s
+t = 32
+Completed 0.029117s
+Completed 0.035076s
+Completed 0.031994s
+Completed 0.033227s
+t = 64
+Completed 0.007056s
+Completed 0.007258s
+Completed 0.006699s
+Completed 0.006764s
+n = 1000000
+t = 1
+Completed 0.945027s
+Completed 1.060617s
+Completed 1.045940s
+Completed 0.996843s
+t = 2
+Completed 0.534549s
+Completed 0.532282s
+Completed 0.599618s
+Completed 0.532925s
+t = 4
+Completed 0.302633s
+Completed 0.259326s
+Completed 0.285060s
+Completed 0.272503s
+t = 8
+Completed 0.182357s
+Completed 0.192109s
+Completed 0.212544s
+Completed 0.218909s
+t = 16
+Completed 0.223535s
+Completed 0.186865s
+Completed 0.216006s
+Completed 0.194156s
+t = 32
+Completed 0.308143s
+Completed 0.307130s
+Completed 0.281672s
+Completed 0.265225s
+t = 64
+Completed 0.153766s
+Completed 0.163598s
+Completed 0.143389s
+Completed 0.134004s
+n = 10000000
+t = 1
+Completed 98.150390s
+Completed 105.876152s
+Completed 102.674032s
+Completed 98.099598s
+t = 2
+Completed 50.194622s
+Completed 53.082999s
+Completed 53.992316s
+Completed 53.468765s
+t = 4
+Completed 26.146124s
+Completed 24.380034s
+Completed 26.394786s
+Completed 26.351007s
+t = 8
+Completed 15.213768s
+Completed 15.340202s
+Completed 15.456107s
+Completed 15.485049s
+t = 16
+Completed 10.230861s
+Completed 10.325731s
+Completed 10.626891s
+Completed 10.724320s
+t = 32
+Completed 9.242726s
+Completed 9.155618s
+Completed 8.766006s
+Completed 9.528242s
+t = 64
+Completed 9.016023s
+Completed 9.291777s
+Completed 8.964453s
+Completed 8.974513s
