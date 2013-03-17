@@ -72,16 +72,16 @@ void setup_grid(GRID_INFO_T *grid) {
 }
 
 void fill_matrix(double* matrix,int n){
-    //printf("Matrix:\n");
+   // printf("Matrix:\n");
     int row,col;
     for (row=0; row<n;row++) {
       for (col=0; col<n;col++) {
         matrix[row*n+col]= (rand() % 9 +1);
-      //  printf("%d ", (int)matrix[row*n+col]);
+     //   printf("%d ", (int)matrix[row*n+col]);
       }
-    // printf("\n");
+   //  printf("\n");
     }
- //  printf("\n");
+  // printf("\n");
 }
 
 // Multiply two matrices (m1 and m2) and put result in m3
@@ -107,7 +107,7 @@ int Fox(int elems, GRID_INFO_T *grid, double *A, double *B, double *C) {
     for (stage = 0; stage<grid->length; stage++) {
         root = (grid->colrank+stage)%(grid->length);
 
-	if(stage > 0){ MPI_Wait(&request2,&status2);}
+	if(stage > 0){ MPI_Barrier(grid->proc_col);}
 
         if (root == grid->rowrank) {
             MPI_Bcast(A, elems*elems, MPI_DOUBLE, root, grid->proc_row);
@@ -118,13 +118,12 @@ int Fox(int elems, GRID_INFO_T *grid, double *A, double *B, double *C) {
             MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length, 100,grid->proc_col,&request);
             multiplyLocal(elems, tempMatrix, B, C);
         }
-        MPI_Wait(&request,&status);
+        MPI_Barrier(grid->proc_col);
         MPI_Irecv(B, elems*elems,MPI_DOUBLE,(grid->colrank+1)%grid->length, 100, grid->proc_col, &request2);
         // Circular shift and replacement
-      /*  MPI_Sendrecv_replace(B, elems*elems, MPI_DOUBLE, 
-(grid->colrank+grid->length-1)%grid->length, 0, 
-            (grid->colrank+1)%grid->length, 0, grid->proc_col, &status);*/
-    }
+     /*   MPI_Sendrecv_replace(B, elems*elems, MPI_DOUBLE, 
+(grid->colrank+grid->length-1)%grid->length, 0,(grid->colrank+1)%grid->length, 0, grid->proc_col, &status); */
+     }
 }
 
 void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n) {
