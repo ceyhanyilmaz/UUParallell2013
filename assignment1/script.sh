@@ -5,7 +5,7 @@ file='ass1.output'
 > file
 
 echo "fox started"
-for n in 100 400 600 800 1000 1200
+for n in 100 400 600 800 1000 1200 1440
 do
 	echo "n = $n started"
 	echo "n = $n" >> $file
