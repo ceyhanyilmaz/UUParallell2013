@@ -63,25 +63,25 @@ void setup_grid(GRID_INFO_T *grid) {
     MPI_Cart_coords(grid->proc_grid,grid->gridrank,ndim,coords);                         /* Gives coordinates for gridrank */
 
      /* Create a communicator for each row */
-    MPI_Comm_split(grid->proc_grid,coords[1],coords[0],&(grid->proc_row));
+    MPI_Comm_split(grid->proc_grid,coords[0],coords[1],&(grid->proc_row));
     MPI_Comm_rank(grid->proc_row,&(grid->rowrank));
 
     /* Create a communicator for each column */
-    MPI_Comm_split(grid->proc_grid,coords[0],coords[1],&(grid->proc_col));
+    MPI_Comm_split(grid->proc_grid,coords[1],coords[0],&(grid->proc_col));
     MPI_Comm_rank(grid->proc_col,&(grid->colrank));
 }
 
 void fill_matrix(double* matrix,int n){
-   // printf("Matrix:\n");
+    printf("Matrix:\n");
     int row,col;
     for (row=0; row<n;row++) {
       for (col=0; col<n;col++) {
-        matrix[row*n+col]= (rand() % 9 +1);
-     //   printf("%d ", (int)matrix[row*n+col]);
+        matrix[row*n+col]= (rand() % 3 +1);
+        printf("%d ", (int)matrix[row*n+col]);
       }
-   //  printf("\n");
+     printf("\n");
     }
-  // printf("\n");
+   printf("\n");
 }
 
 // Multiply two matrices (m1 and m2) and put result in m3
@@ -107,22 +107,24 @@ int Fox(int elems, GRID_INFO_T *grid, double *A, double *B, double *C) {
     for (stage = 0; stage<grid->length; stage++) {
         root = (grid->colrank+stage)%(grid->length);
 
-	if(stage > 0){ MPI_Barrier(grid->proc_col);}
+    	if(stage > 0) { 
+           // MPI_Barrier(grid->proc_col);
+        }
 
         if (root == grid->rowrank) {
             MPI_Bcast(A, elems*elems, MPI_DOUBLE, root, grid->proc_row);
-	    MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length,100,grid->proc_col, &request);
+            MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length,100,grid->proc_col, &request);
             multiplyLocal(elems, A, B, C);
         } else {
             MPI_Bcast(tempMatrix, elems*elems, MPI_DOUBLE, root, grid->proc_row);
             MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length, 100,grid->proc_col,&request);
             multiplyLocal(elems, tempMatrix, B, C);
         }
-        MPI_Barrier(grid->proc_col);
-        MPI_Irecv(B, elems*elems,MPI_DOUBLE,(grid->colrank+1)%grid->length, 100, grid->proc_col, &request2);
+
+      //  MPI_Barrier(grid->proc_col);
         // Circular shift and replacement
-     /*   MPI_Sendrecv_replace(B, elems*elems, MPI_DOUBLE, 
-(grid->colrank+grid->length-1)%grid->length, 0,(grid->colrank+1)%grid->length, 0, grid->proc_col, &status); */
+        MPI_Irecv(B, elems*elems,MPI_DOUBLE,(grid->colrank+1)%grid->length, 100, grid->proc_col, &request2);
+            
      }
 }
 
@@ -237,7 +239,7 @@ int main(int argc, char *argv[]) {
         printf("Execution time: %.10f\n", finish);
     }
 
-   /* Print our finalized C matrix  
+   /* Print our finalized C matrix */ 
     if (grid.gridrank == 0) {
         printf("Finished product:\n");
         int frow,fcol;
@@ -251,7 +253,7 @@ int main(int argc, char *argv[]) {
         printf("\n");
         
     }
-   */
+   
     free(A);
     free(B);
     free(C);
