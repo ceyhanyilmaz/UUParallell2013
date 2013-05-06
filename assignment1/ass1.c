@@ -10,6 +10,7 @@
 #include <math.h>
 #include <assert.h>
 #define N_MAX 10000000
+#define DEBUG 0
 
 typedef struct GRID_INFO_T {
     int       size;             /* # of processes           */
@@ -52,7 +53,7 @@ void setup_grid(GRID_INFO_T *grid) {
     MPI_Comm_size(MPI_COMM_WORLD, &(grid->size));    /* Get the number of processors */
     
     grid->length = (int)sqrt((double)grid->size);
-    //printf("Length is %d and size is %d", grid->length, grid->size);
+
     assert(grid->length*grid->length == grid->size); /* Check to see if size is a good square number */
     dims[0] = dims[1] = grid->length;
 
@@ -72,16 +73,16 @@ void setup_grid(GRID_INFO_T *grid) {
 }
 
 void fill_matrix(double* matrix,int n){
-    printf("Matrix:\n");
+    if (DEBUG) { printf("Matrix:\n"); }
     int row,col;
     for (row=0; row<n;row++) {
       for (col=0; col<n;col++) {
-        matrix[row*n+col]= (rand() % 3 +1);
-        printf("%d ", (int)matrix[row*n+col]);
+        matrix[row*n+col]= (rand() % 2 +1);
+        if (DEBUG) { printf("%d ", (int)matrix[row*n+col]); }
       }
-     printf("\n");
+     if (DEBUG) { printf("\n"); }
     }
-   printf("\n");
+   if (DEBUG) { printf("\n"); }
 }
 
 // Multiply two matrices (m1 and m2) and put result in m3
@@ -97,70 +98,66 @@ void multiplyLocal(int n, double *m1, double *m2, double *m3) {
 }
  
 int Fox(int elems, GRID_INFO_T *grid, double *A, double *B, double *C) {
-    double *tempMatrix; 
+    double *tempA, *tempB; 
     MPI_Status status, status2;
     MPI_Request request,request2;
 
-    tempMatrix = (double *)calloc(elems*elems,sizeof(double));  
+    tempA = (double *)calloc(elems*elems,sizeof(double));  
+    tempB = (double *)calloc(elems*elems,sizeof(double));  
     int stage, root;
 
     for (stage = 0; stage<grid->length; stage++) {
         root = (grid->colrank+stage)%(grid->length);
 
-    	if(stage > 0) { 
-           // MPI_Barrier(grid->proc_col);
-        }
-
         if (root == grid->rowrank) {
-            MPI_Bcast(A, elems*elems, MPI_DOUBLE, root, grid->proc_row);
-            MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length,100,grid->proc_col, &request);
-            multiplyLocal(elems, A, B, C);
-        } else {
-            MPI_Bcast(tempMatrix, elems*elems, MPI_DOUBLE, root, grid->proc_row);
-            MPI_Isend(B, elems*elems,MPI_DOUBLE,(grid->colrank+grid->length-1)%grid->length, 100,grid->proc_col,&request);
-            multiplyLocal(elems, tempMatrix, B, C);
+            for (int i = 0; i < elems*elems; i++) {
+                tempA[i] = A[i];
+            }
         }
-
-      //  MPI_Barrier(grid->proc_col);
-        // Circular shift and replacement
-        MPI_Irecv(B, elems*elems,MPI_DOUBLE,(grid->colrank+1)%grid->length, 100, grid->proc_col, &request2);
             
-     }
-}
+        MPI_Bcast(tempA, elems*elems, MPI_DOUBLE, root, grid->proc_row);
 
-void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n) {
-    MPI_Status status;
-    int elems = n/grid->length;
-
-    int coords[2] = {grid->colrank, grid->rowrank}; 
-
-    if(grid->gridrank == 0){
-        // Root
-        double *tempMatrix = (double *)calloc(elems*elems,sizeof(double));
-        int i, j, k;
-        for (j = 0; j < elems; j++) {
-            for (k = 0; k < elems; k++) {
-                global_C[((coords[0]*elems)+j)*n+((coords[1]*elems)+k)] = local_C[j*elems+k];
-            }
+        // Send B
+        if (grid->colrank == 0) {
+            MPI_Isend(B, elems*elems, MPI_DOUBLE, (grid->length)-1, 113, grid->proc_col, &request);
+        } else {
+            MPI_Isend(B, elems*elems, MPI_DOUBLE, (grid->colrank)-1, 113, grid->proc_col, &request);
         }
 
-        for(i = 1; i<grid->size; i++){
-            MPI_Recv(tempMatrix, elems*elems, MPI_DOUBLE, i, 0, grid->proc_grid, &status);
-            MPI_Cart_coords(grid->proc_grid, i, 2, coords);
-
-            for (j = 0; j < elems; j++) {
-                for (k = 0; k < elems; k++) {
-                    global_C[((coords[1]*elems)+j)*n+((coords[0]*elems)+k)] = tempMatrix[j*elems+k];
-                }
-            }
+        if (grid->colrank == (grid->length)-1) {
+            MPI_Irecv(tempB, elems*elems, MPI_DOUBLE, 0, 113, grid->proc_col, &request);
+        } else {
+            MPI_Irecv(tempB, elems*elems, MPI_DOUBLE, (grid->colrank)+1, 113, grid->proc_col, &request);
         }
 
-    } else {
-        // Send to root
-        MPI_Send(local_C, elems*elems, MPI_DOUBLE, 0, 0, grid->proc_grid);
+        multiplyLocal(elems, tempA, B, C);
+
+        MPI_Wait(&request, &status);
+        for (int i=0; i < elems*elems; i++) {
+            B[i] = tempB[i];
+        }
     }
 }
 
+void collectMatrix(double *global_C, double *local_C, GRID_INFO_T *grid, int n, MPI_Datatype *subMatrix) {
+    MPI_Status status;
+    MPI_Request request;
+    int elems = n/grid->length;
+    int comm_rank, position;
+
+    MPI_Isend(local_C, elems*elems, MPI_DOUBLE, 0, 0, grid->proc_grid, &request);
+
+    if (grid->gridrank == 0) {
+        for(int i=0; i < grid->size; i++) {
+            int col = floor(i/grid->length)*elems;
+            int row = (i % grid->length)*elems;
+            int position = row*n+col;
+
+            MPI_Irecv(&global_C[position], 1, *subMatrix, i, 0, grid->proc_grid, &request);
+            MPI_Wait(&request, &status);
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     double startTime = 0.0, endTime = 0.0, finish = 0.0;
@@ -197,7 +194,7 @@ int main(int argc, char *argv[]) {
         fill_matrix(global_B, n);
     }
 
-    MPI_Type_vector(count,blocklen,stride,MPI_DOUBLE,&submatrix);
+    MPI_Type_vector(count, blocklen, stride, MPI_DOUBLE, &submatrix);
     MPI_Type_commit(&submatrix);
 
     startTime = MPI_Wtime();
@@ -206,7 +203,7 @@ int main(int argc, char *argv[]) {
     /* Distribute matrices A and B so that each process gets A_local and B_local */
     if (grid.gridrank == 0) {
         int i;
-        for(i=1; i<grid.size; i++) {
+        for(i=1; i < grid.size; i++) {
             int col = floor(i/grid.length)*elems;
             int row = (i % grid.length)*elems;
 
@@ -230,8 +227,7 @@ int main(int argc, char *argv[]) {
 
     /* Syncronize the calculations */
     MPI_Barrier(MPI_COMM_WORLD);
-
-    collectMatrix(global_C, C, &grid, n);
+    collectMatrix(global_C, C, &grid, n, &submatrix);
 
     if (grid.gridrank == 0) {
         endTime = MPI_Wtime();
@@ -239,8 +235,8 @@ int main(int argc, char *argv[]) {
         printf("Execution time: %.10f\n", finish);
     }
 
-   /* Print our finalized C matrix */ 
-    if (grid.gridrank == 0) {
+    /* Print our finalized C matrix */ 
+    if (grid.gridrank == 0 && DEBUG) {
         printf("Finished product:\n");
         int frow,fcol;
 
@@ -250,16 +246,23 @@ int main(int argc, char *argv[]) {
             }
             printf("\n");
         }
-        printf("\n");
-        
+        printf("\n");   
     }
-   
+
+
     free(A);
     free(B);
     free(C);
 
+   
+    MPI_Comm_free(&(grid.proc_col));
+    MPI_Comm_free(&(grid.proc_row));
+    MPI_Comm_free(&(grid.proc_grid));
+
     MPI_Type_free(&submatrix);
+
     MPI_Barrier(MPI_COMM_WORLD);
+
     MPI_Finalize(); 
 
   return 0;
